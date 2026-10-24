@@ -3,205 +3,385 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NominaGT & RRHH Pro v1.0 | Sistema de Planillas IGSS, IRTRA, Bono 14 & Aguinaldo</title>
+    <title>NominaGT & RRHH Pro v2.0 | Propietario: Kevin Alejandro Boquer Ramos</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = { darkMode: 'class' };
+    </script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap');
-        body { font-family: 'Inter', sans-serif; background-color: #090d16; color: #e2e8f0; }
+        body { font-family: 'Inter', sans-serif; transition: background-color 0.25s, color 0.25s; }
         .mono { font-family: 'JetBrains Mono', monospace; }
+        /* Modo Fácil: aumenta legibilidad y resalta pasos */
+        body.modo-facil { font-size: 105%; }
+        body.modo-facil .guia-paso { display: block !important; }
         @media print {
             body * { visibility: hidden; }
-            #modalBoleta, #modalBoleta * { visibility: visible; }
-            #modalBoleta { position: absolute; left: 0; top: 0; width: 100%; max-width: 100%; background: white !important; color: black !important; box-shadow: none !important; }
+            #modalImprimible, #modalImprimible * { visibility: visible; }
+            #modalImprimible { position: absolute; left: 0; top: 0; width: 100%; max-width: 100%; background: white !important; color: black !important; box-shadow: none !important; }
             .no-print { display: none !important; }
         }
     </style>
 </head>
-<body class="min-h-screen flex flex-col">
+<body class="min-h-screen flex flex-col bg-slate-50 text-slate-800 dark:bg-[#090d16] dark:text-slate-100">
 
-    <!-- HEADER CORPORATIVO -->
-    <header class="bg-slate-900/90 border-b border-slate-800 sticky top-0 z-40 backdrop-blur-md">
-        <div class="max-w-7xl mx-auto px-4 py-3 flex flex-wrap justify-between items-center gap-4">
+    <!-- BARRA SUPERIOR CORPORATIVA -->
+    <header class="bg-white/95 dark:bg-slate-900/95 border-b border-slate-200 dark:border-slate-800 sticky top-0 z-40 backdrop-blur-md shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 py-3 flex flex-wrap justify-between items-center gap-3">
             <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 to-emerald-500 flex items-center justify-center shadow-lg shadow-blue-500/20">
+                <div class="w-11 h-11 rounded-xl bg-gradient-to-br from-blue-600 to-emerald-500 flex items-center justify-center shadow-lg shadow-blue-500/20">
                     <i class="fa-solid fa-users-gear text-white text-lg"></i>
                 </div>
                 <div>
-                    <div class="flex items-center gap-2">
-                        <h1 class="font-extrabold text-lg tracking-tight text-white">NominaGT <span class="text-emerald-400">& RRHH Pro v1.0</span></h1>
-                        <span id="badgeEstado" class="text-[11px] px-2 py-0.5 rounded-full font-semibold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
-                            Legislación Laboral Guatemala
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <h1 class="font-extrabold text-lg tracking-tight text-slate-900 dark:text-white">NominaGT <span class="text-blue-600 dark:text-emerald-400">& RRHH Pro v2.0</span></h1>
+                        <span class="text-[11px] px-2.5 py-0.5 rounded-full font-bold bg-blue-500/10 text-blue-600 dark:bg-emerald-500/20 dark:text-emerald-400 border border-blue-500/20 dark:border-emerald-500/30">
+                            <i class="fa-solid fa-user-shield mr-1"></i>Propietario: Kevin Alejandro Boquer Ramos
                         </span>
                     </div>
-                    <p class="text-xs text-slate-400">Automatización por Trigger SQL: IGSS (4.83%), Patronal (12.67%), Decreto 78-89, Bono 14 & Aguinaldo</p>
+                    <p class="text-xs text-slate-500 dark:text-slate-400">Sistema Empresarial de Planillas IGSS (4.83%), IRTRA, INTECAP, Finiquitos y Prestaciones de Ley</p>
                 </div>
             </div>
 
-            <nav class="flex flex-wrap gap-2">
-                <button onclick="cambiarVista('planilla')" id="btnVista-planilla" class="px-3.5 py-2 rounded-lg text-xs font-bold transition bg-blue-600 text-white shadow-lg shadow-blue-600/30">
-                    <i class="fa-solid fa-file-invoice-dollar mr-1.5"></i>1. Liquidador de Planilla & Boletas PDF
+            <!-- CONTROLES DE ACCESIBILIDAD: MODO FÁCIL Y TEMA CLARO/OSCURO -->
+            <div class="flex items-center gap-2 flex-wrap">
+                <button onclick="alternarModoFacil()" id="btnModoFacil" class="px-3 py-1.5 rounded-xl text-xs font-bold border transition bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/30 hover:bg-amber-500/20 flex items-center gap-1.5" title="Activa explicaciones paso a paso y vista simplificada">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i> <span id="txtModoFacil">Modo Fácil: OFF</span>
                 </button>
-                <button onclick="cambiarVista('prestaciones')" id="btnVista-prestaciones" class="px-3.5 py-2 rounded-lg text-xs font-bold transition bg-slate-800 text-slate-300 hover:bg-slate-700">
-                    <i class="fa-solid fa-scale-balanced mr-1.5"></i>2. Libro de Salarios & Prestaciones (Bono 14/Aguinaldo)
+                <button onclick="alternarTema()" id="btnTema" class="px-3 py-1.5 rounded-xl text-xs font-bold border transition bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 border-slate-300 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700 flex items-center gap-1.5">
+                    <i id="iconoTema" class="fa-solid fa-sun text-amber-400"></i> <span id="txtTema">Modo Claro</span>
                 </button>
-                <button onclick="cambiarVista('bitacora')" id="btnVista-bitacora" class="px-3.5 py-2 rounded-lg text-xs font-bold transition bg-slate-800 text-slate-300 hover:bg-slate-700">
-                    <i class="fa-solid fa-shield-halved mr-1.5"></i>3. Bitácora Forense SQL
-                </button>
-            </nav>
+            </div>
+        </div>
+
+        <!-- BARRA DE NAVEGACIÓN DE 4 MÓDULOS -->
+        <div class="max-w-7xl mx-auto px-4 py-2 border-t border-slate-100 dark:border-slate-800/80 flex flex-wrap gap-2">
+            <button onclick="cambiarVista('planilla')" id="btnVista-planilla" class="px-3.5 py-2 rounded-lg text-xs font-bold transition bg-blue-600 text-white shadow-md shadow-blue-600/20">
+                <i class="fa-solid fa-file-invoice-dollar mr-1.5"></i>1. Emitir Planilla & Boletas
+            </button>
+            <button onclick="cambiarVista('empleados')" id="btnVista-empleados" class="px-3.5 py-2 rounded-lg text-xs font-bold transition bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700">
+                <i class="fa-solid fa-id-card-clip mr-1.5"></i>2. Personal, Bono 14 & Aguinaldo
+            </button>
+            <button onclick="cambiarVista('liquidacion')" id="btnVista-liquidacion" class="px-3.5 py-2 rounded-lg text-xs font-bold transition bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700">
+                <i class="fa-solid fa-calculator mr-1.5"></i>3. Calculadora de Liquidación / Indemnización
+            </button>
+            <button onclick="cambiarVista('analytics')" id="btnVista-analytics" class="px-3.5 py-2 rounded-lg text-xs font-bold transition bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700">
+                <i class="fa-solid fa-chart-pie mr-1.5"></i>4. Gráficas BI & Auditoría SQL
+            </button>
         </div>
     </header>
 
+    <!-- CONTENIDO PRINCIPAL -->
     <main class="max-w-7xl mx-auto w-full px-4 py-6 flex-1">
 
-        <!-- KPIs FINANCIEROS DE PLANILLA -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-            <div class="bg-slate-900 border border-slate-800 rounded-xl p-4">
-                <span class="text-[11px] text-slate-400 uppercase font-semibold">Total Líquido Pagado</span>
-                <p id="kpiLiquidoTotal" class="text-2xl font-extrabold text-emerald-400 mt-1 mono">Q0.00</p>
-                <span class="text-[11px] text-slate-400">Desembolso neto a bancos</span>
-            </div>
-            <div class="bg-slate-900 border border-slate-800 rounded-xl p-4">
-                <span class="text-[11px] text-slate-400 uppercase font-semibold">Retención IGSS Laboral (4.83%)</span>
-                <p id="kpiIgssLaboral" class="text-2xl font-extrabold text-cyan-400 mt-1 mono">Q0.00</p>
-                <span class="text-[11px] text-cyan-300">Planilla Electrónica IGSS</span>
-            </div>
-            <div class="bg-slate-900 border border-slate-800 rounded-xl p-4">
-                <span class="text-[11px] text-slate-400 uppercase font-semibold">Cuota Patronal (12.67%)</span>
-                <p id="kpiPatronal" class="text-2xl font-extrabold text-amber-400 mt-1 mono">Q0.00</p>
-                <span class="text-[11px] text-slate-400">IGSS 10.67% + IRTRA 1% + INTECAP 1%</span>
-            </div>
-            <div class="bg-slate-900 border border-slate-800 rounded-xl p-4">
-                <span class="text-[11px] text-slate-400 uppercase font-semibold">Reserva Prestaciones (25%)</span>
-                <p id="kpiPrestaciones" class="text-2xl font-extrabold text-indigo-400 mt-1 mono">Q0.00</p>
-                <span class="text-[11px] text-slate-400">Bono 14 + Aguinaldo + Indemnización</span>
+        <!-- BANNER EXPLICATIVO DEL MODO FÁCIL (OCULTO POR DEFECTO, VISIBLE AL ACTIVAR MODO FÁCIL) -->
+        <div class="guia-paso hidden mb-6 bg-gradient-to-r from-blue-600/15 via-emerald-500/10 to-transparent border-l-4 border-blue-600 dark:border-emerald-400 p-4 rounded-r-2xl">
+            <h2 class="text-sm font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
+                <i class="fa-solid fa-circle-info text-blue-600 dark:text-emerald-400"></i>
+                Guía Rápida de Uso (Modo Fácil Activado)
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mt-2 text-xs text-slate-700 dark:text-slate-300">
+                <div class="bg-white/80 dark:bg-slate-900/80 p-3 rounded-xl border border-slate-200 dark:border-slate-700">
+                    <strong class="text-blue-600 dark:text-cyan-400 block mb-0.5">PASO 1: Elige al trabajador</strong>
+                    Selecciona el nombre del empleado en la caja izquierda y escribe cuántas horas extras hizo.
+                </div>
+                <div class="bg-white/80 dark:bg-slate-900/80 p-3 rounded-xl border border-slate-200 dark:border-slate-700">
+                    <strong class="text-emerald-600 dark:text-emerald-400 block mb-0.5">PASO 2: Revisa el cálculo en vivo</strong>
+                    El sistema te muestra automáticamente cuánto se le descuenta de IGSS (4.83%) y cuánto dinero recibirá.
+                </div>
+                <div class="bg-white/80 dark:bg-slate-900/80 p-3 rounded-xl border border-slate-200 dark:border-slate-700">
+                    <strong class="text-indigo-600 dark:text-indigo-400 block mb-0.5">PASO 3: Imprime o envía por WhatsApp</strong>
+                    Haz clic en el botón verde para guardar la boleta, imprimirla en PDF o enviarla al WhatsApp del trabajador.
+                </div>
             </div>
         </div>
 
-        <!-- ==================== VISTA 1: GENERADOR DE PLANILLA Y BOLETAS ==================== -->
+        <!-- TARJETAS DE RESUMEN EJECUTIVO (KPIs) -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+            <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-sm">
+                <span class="text-[11px] text-slate-500 dark:text-slate-400 uppercase font-bold">Total Sueldos Líquidos a Pagar</span>
+                <p id="kpiLiquidoTotal" class="text-2xl font-extrabold text-emerald-600 dark:text-emerald-400 mt-1 mono">Q0.00</p>
+                <span class="text-[11px] text-slate-500 dark:text-slate-400">Dinero neto a depositar en banco</span>
+            </div>
+            <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-sm">
+                <span class="text-[11px] text-slate-500 dark:text-slate-400 uppercase font-bold">Descuento IGSS Laboral (4.83%)</span>
+                <p id="kpiIgssLaboral" class="text-2xl font-extrabold text-blue-600 dark:text-cyan-400 mt-1 mono">Q0.00</p>
+                <span class="text-[11px] text-slate-500 dark:text-slate-400">Retención legal de empleados</span>
+            </div>
+            <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-sm">
+                <span class="text-[11px] text-slate-500 dark:text-slate-400 uppercase font-bold">Cuota Patronal (12.67%)</span>
+                <p id="kpiPatronal" class="text-2xl font-extrabold text-amber-600 dark:text-amber-400 mt-1 mono">Q0.00</p>
+                <span class="text-[11px] text-slate-500 dark:text-slate-400">IGSS 10.67% + IRTRA 1% + INTECAP 1%</span>
+            </div>
+            <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-sm">
+                <span class="text-[11px] text-slate-500 dark:text-slate-400 uppercase font-bold">Reserva Bono 14 & Aguinaldo</span>
+                <p id="kpiPrestaciones" class="text-2xl font-extrabold text-indigo-600 dark:text-indigo-400 mt-1 mono">Q0.00</p>
+                <span class="text-[11px] text-slate-500 dark:text-slate-400">Ahorro contable mensual (25%)</span>
+            </div>
+        </div>
+
+        <!-- ==================== VISTA 1: EMITIR PLANILLA + VISTA PREVIA EN VIVO ==================== -->
         <section id="seccion-planilla" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <!-- Formulario Liquidador -->
-            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5">
-                <h2 class="text-sm font-bold text-white mb-1"><i class="fa-solid fa-calculator text-blue-400 mr-2"></i>Procesar Nómina Mensual (Trigger SQL)</h2>
-                <p class="text-xs text-slate-400 mb-4">El motor MySQL calcula horas extras al 1.5x, IGSS (4.83%) y pasivo laboral automáticamente.</p>
+            <!-- Formulario con Calculadora en Vivo -->
+            <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm">
+                <div class="flex items-center justify-between mb-2">
+                    <h2 class="text-sm font-extrabold text-slate-900 dark:text-white">
+                        <i class="fa-solid fa-calculator text-blue-600 dark:text-blue-400 mr-1.5"></i>Calcular Pago de Empleado
+                    </h2>
+                    <span class="text-[10px] px-2 py-0.5 rounded bg-blue-500/10 text-blue-600 dark:text-blue-400 font-bold">Paso 1</span>
+                </div>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mb-4">Selecciona al empleado y observa el cálculo instantáneo antes de emitir su boleta.</p>
 
                 <form onsubmit="emitirBoletaPlanilla(event)" class="space-y-3 text-xs">
                     <div>
-                        <label class="text-slate-400 block mb-1">Colaborador Activo</label>
-                        <select id="formEmpleadoId" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-white" required></select>
+                        <label class="text-slate-600 dark:text-slate-300 font-semibold block mb-1">1. Seleccionar Trabajador</label>
+                        <select id="formEmpleadoId" onchange="actualizarVistaPreviaEnVivo()" class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2.5 text-slate-900 dark:text-white font-medium" required></select>
                     </div>
                     <div class="grid grid-cols-2 gap-2">
                         <div>
-                            <label class="text-slate-400 block mb-1">Período Fiscal</label>
-                            <input type="text" id="formPeriodo" value="OCTUBRE 2026" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-white mono" required>
+                            <label class="text-slate-600 dark:text-slate-300 font-semibold block mb-1">Mes a Pagar</label>
+                            <input type="text" id="formPeriodo" value="OCTUBRE 2026" class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2 text-slate-900 dark:text-white mono" required>
                         </div>
                         <div>
-                            <label class="text-slate-400 block mb-1">Bonif. Decreto 78-89</label>
-                            <input type="number" step="0.01" id="formBonificacion" value="250.00" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-emerald-400 mono" required>
+                            <label class="text-slate-600 dark:text-slate-300 font-semibold block mb-1">Bonif. Ley (78-89)</label>
+                            <input type="number" step="0.01" id="formBonificacion" oninput="actualizarVistaPreviaEnVivo()" value="250.00" class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2 text-emerald-600 dark:text-emerald-400 font-bold mono" required>
                         </div>
                     </div>
                     <div class="grid grid-cols-2 gap-2">
                         <div>
-                            <label class="text-slate-400 block mb-1">Horas Extras (1.5x)</label>
-                            <input type="number" id="formHorasExtras" min="0" value="4" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-white mono" required>
+                            <label class="text-slate-600 dark:text-slate-300 font-semibold block mb-1">Horas Extras (1.5x)</label>
+                            <input type="number" id="formHorasExtras" oninput="actualizarVistaPreviaEnVivo()" min="0" value="4" class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2 text-slate-900 dark:text-white mono" required>
                         </div>
                         <div>
-                            <label class="text-slate-400 block mb-1">Comisiones (Q)</label>
-                            <input type="number" step="0.01" id="formComisiones" min="0" value="0.00" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-white mono" required>
+                            <label class="text-slate-600 dark:text-slate-300 font-semibold block mb-1">Comisiones (Q)</label>
+                            <input type="number" step="0.01" id="formComisiones" oninput="actualizarVistaPreviaEnVivo()" min="0" value="0.00" class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2 text-slate-900 dark:text-white mono" required>
                         </div>
                     </div>
                     <div>
-                        <label class="text-slate-400 block mb-1">Descuento ISR / Anticipos Judiciales (Q)</label>
-                        <input type="number" step="0.01" id="formDescuentos" min="0" value="0.00" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-rose-400 mono" required>
+                        <label class="text-slate-600 dark:text-slate-300 font-semibold block mb-1">Descuentos / Anticipos (Q)</label>
+                        <input type="number" step="0.01" id="formDescuentos" oninput="actualizarVistaPreviaEnVivo()" min="0" value="0.00" class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2 text-rose-600 dark:text-rose-400 mono" required>
+                    </div>
+
+                    <!-- CAJA DE VISTA PREVIA CLARA EN VIVO -->
+                    <div class="bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl p-3 space-y-1.5">
+                        <div class="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase flex justify-between">
+                            <span>Resumen Previo en Vivo:</span>
+                            <span class="text-emerald-600 dark:text-emerald-400">Automático</span>
+                        </div>
+                        <div class="flex justify-between text-xs">
+                            <span class="text-slate-600 dark:text-slate-400">Sueldo + Extras + Bonif:</span>
+                            <span id="prevIngresos" class="mono font-bold text-slate-900 dark:text-white">Q0.00</span>
+                        </div>
+                        <div class="flex justify-between text-xs">
+                            <span class="text-slate-600 dark:text-slate-400">Descuento IGSS (4.83%):</span>
+                            <span id="prevIgss" class="mono font-bold text-rose-600 dark:text-rose-400">-Q0.00</span>
+                        </div>
+                        <div class="flex justify-between text-sm font-extrabold border-t border-slate-300 dark:border-slate-800 pt-1.5">
+                            <span class="text-slate-900 dark:text-white">LÍQUIDO A RECIBIR:</span>
+                            <span id="prevLiquido" class="mono text-emerald-600 dark:text-emerald-400">Q0.00</span>
+                        </div>
                     </div>
 
                     <button type="submit" class="w-full py-3 rounded-xl bg-gradient-to-r from-blue-600 to-emerald-600 hover:from-blue-500 hover:to-emerald-500 text-white font-bold transition shadow-lg shadow-blue-600/20">
-                        <i class="fa-solid fa-bolt mr-1"></i> CALCULAR CON TRIGGER SQL Y GENERAR BOLETA
+                        <i class="fa-solid fa-check-double mr-1"></i> GUARDAR EN PLANILLA Y ABRIR BOLETA
                     </button>
                 </form>
             </div>
 
-            <!-- Tabla de Planillas Generadas -->
-            <div class="lg:col-span-2 bg-slate-900 border border-slate-800 rounded-2xl p-5">
-                <div class="flex flex-wrap justify-between items-center gap-2 mb-4">
-                    <h3 class="text-sm font-bold text-white"><i class="fa-solid fa-money-check-dollar text-emerald-400 mr-2"></i>Nómina Emitida y Boletas Oficiales de Pago</h3>
-                    <button onclick="exportarPlanillaCSV()" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-emerald-400 border border-slate-700">
-                        <i class="fa-solid fa-file-excel mr-1"></i>Exportar Planilla IGSS (CSV)
-                    </button>
+            <!-- Tabla de Planillas con Buscador Rápido y Botón WhatsApp -->
+            <div class="lg:col-span-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm">
+                <div class="flex flex-wrap justify-between items-center gap-3 mb-4">
+                    <div>
+                        <h3 class="text-sm font-extrabold text-slate-900 dark:text-white"><i class="fa-solid fa-money-check-dollar text-emerald-600 dark:text-emerald-400 mr-2"></i>Pagos Emitidos (Boleta PDF y Envío por WhatsApp)</h3>
+                        <p class="text-xs text-slate-500 dark:text-slate-400">Haz clic en <strong>Boleta PDF</strong> para imprimir o en <strong>WhatsApp</strong> para notificar al trabajador</p>
+                    </div>
+                    <div class="flex gap-2">
+                        <input type="text" id="buscadorPlanilla" oninput="renderizarTodo()" placeholder="Buscar empleado..." class="bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-1.5 text-xs text-slate-900 dark:text-white">
+                        <button onclick="exportarPlanillaCSV()" class="px-3 py-1.5 rounded-xl bg-emerald-600/10 hover:bg-emerald-600/20 text-xs font-bold text-emerald-700 dark:text-emerald-400 border border-emerald-500/30">
+                            <i class="fa-solid fa-file-excel mr-1"></i>Excel IGSS
+                        </button>
+                    </div>
                 </div>
                 <div class="overflow-x-auto">
                     <table class="w-full text-left border-collapse text-xs">
                         <thead>
-                            <tr class="border-b border-slate-800 text-slate-400 uppercase text-[11px]">
+                            <tr class="border-b border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400 uppercase text-[11px]">
                                 <th class="py-2.5 px-2">Colaborador</th>
                                 <th class="py-2.5 px-2">Sueldo Base</th>
-                                <th class="py-2.5 px-2">+ H. Extras / Bonif.</th>
+                                <th class="py-2.5 px-2">+ Extras / Bonif.</th>
                                 <th class="py-2.5 px-2">- IGSS (4.83%)</th>
                                 <th class="py-2.5 px-2">Líquido a Recibir</th>
-                                <th class="py-2.5 px-2 text-right">Boleta PDF</th>
+                                <th class="py-2.5 px-2 text-right">Acciones</th>
                             </tr>
                         </thead>
-                        <tbody id="tablaPlanillasBody" class="divide-y divide-slate-800/70"></tbody>
+                        <tbody id="tablaPlanillasBody" class="divide-y divide-slate-200 dark:divide-slate-800/70"></tbody>
                     </table>
                 </div>
             </div>
         </section>
 
-        <!-- ==================== VISTA 2: DIRECTORIO Y PROVISIÓN DE PRESTACIONES ==================== -->
-        <section id="seccion-prestaciones" class="hidden space-y-6">
-            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5">
-                <h3 class="text-sm font-bold text-white mb-1"><i class="fa-solid fa-book-open text-cyan-400 mr-2"></i>Libro de Salarios y Provisión Mensual de Prestaciones (Decreto 42-92 Bono 14 & Aguinaldo)</h3>
-                <p class="text-xs text-slate-400 mb-4">Cálculo automático del pasivo laboral mensual que la empresa debe reservar por cada trabajador activo</p>
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left border-collapse text-xs">
-                        <thead>
-                            <tr class="border-b border-slate-800 text-slate-400 uppercase text-[11px]">
-                                <th class="py-2.5 px-2">Código / DPI</th>
-                                <th class="py-2.5 px-2">Colaborador / Puesto</th>
-                                <th class="py-2.5 px-2">No. Afiliación IGSS</th>
-                                <th class="py-2.5 px-2">Salario Base</th>
-                                <th class="py-2.5 px-2">Reserva Bono 14 (8.33%)</th>
-                                <th class="py-2.5 px-2">Reserva Aguinaldo (8.33%)</th>
-                                <th class="py-2.5 px-2">Reserva Indemnización (8.33%)</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tablaEmpleadosBody" class="divide-y divide-slate-800/70"></tbody>
-                    </table>
+        <!-- ==================== VISTA 2: PERSONAL, ALTA DE EMPLEADOS & PRESTACIONES ==================== -->
+        <section id="seccion-empleados" class="hidden space-y-6">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Formulario para Agregar Nuevo Empleado -->
+                <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm">
+                    <h3 class="text-sm font-extrabold text-slate-900 dark:text-white mb-1"><i class="fa-solid fa-user-plus text-blue-600 dark:text-blue-400 mr-2"></i>Contratar / Agregar Empleado</h3>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mb-4">Registra un nuevo colaborador en el catálogo oficial.</p>
+                    <form onsubmit="agregarNuevoEmpleado(event)" class="space-y-2.5 text-xs">
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="text-slate-600 dark:text-slate-300 font-semibold block mb-1">Código</label>
+                                <input type="text" id="empCodigo" placeholder="EMP-GT-005" class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-lg px-2.5 py-2 mono" required>
+                            </div>
+                            <div>
+                                <label class="text-slate-600 dark:text-slate-300 font-semibold block mb-1">DPI (CUI)</label>
+                                <input type="text" id="empDpi" placeholder="2910 38471 0101" class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-lg px-2.5 py-2 mono" required>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="text-slate-600 dark:text-slate-300 font-semibold block mb-1">Nombre Completo</label>
+                            <input type="text" id="empNombre" placeholder="Ej. Luis Fernando Morales" class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-lg px-2.5 py-2" required>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="text-slate-600 dark:text-slate-300 font-semibold block mb-1">Puesto</label>
+                                <input type="text" id="empPuesto" placeholder="Desarrollador Jr" class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-lg px-2.5 py-2" required>
+                            </div>
+                            <div>
+                                <label class="text-slate-600 dark:text-slate-300 font-semibold block mb-1">Departamento</label>
+                                <select id="empDepto" class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-lg px-2.5 py-2">
+                                    <option value="Tecnología e Innovación">Tecnología e Innovación</option>
+                                    <option value="Finanzas y Contabilidad">Finanzas y Contabilidad</option>
+                                    <option value="Capital Humano">Capital Humano</option>
+                                    <option value="Operaciones y Ventas">Operaciones y Ventas</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="text-slate-600 dark:text-slate-300 font-semibold block mb-1">Sueldo Base (Q)</label>
+                                <input type="number" step="0.01" min="3000" id="empSalario" value="4800.00" class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-lg px-2.5 py-2 mono" required>
+                            </div>
+                            <div>
+                                <label class="text-slate-600 dark:text-slate-300 font-semibold block mb-1">WhatsApp</label>
+                                <input type="text" id="empTel" value="50255559999" class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-lg px-2.5 py-2 mono" required>
+                            </div>
+                        </div>
+                        <button type="submit" class="w-full py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold transition">
+                            <i class="fa-solid fa-plus mr-1"></i>Guardar Nuevo Colaborador
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Libro de Salarios y Provisión Bono 14 / Aguinaldo -->
+                <div class="lg:col-span-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm">
+                    <h3 class="text-sm font-extrabold text-slate-900 dark:text-white mb-1"><i class="fa-solid fa-scale-balanced text-emerald-600 dark:text-emerald-400 mr-2"></i>Libro de Salarios y Reserva Mensual de Prestaciones (Bono 14 y Aguinaldo)</h3>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mb-4">Muestra cuánto debe reservar la empresa cada mes para cubrir Bono 14 (8.33%), Aguinaldo (8.33%) e Indemnización (8.33%)</p>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse text-xs">
+                            <thead>
+                                <tr class="border-b border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400 uppercase text-[11px]">
+                                    <th class="py-2.5 px-2">Código / DPI</th>
+                                    <th class="py-2.5 px-2">Colaborador / Puesto</th>
+                                    <th class="py-2.5 px-2">Sueldo Base</th>
+                                    <th class="py-2.5 px-2">Reserva Bono 14</th>
+                                    <th class="py-2.5 px-2">Reserva Aguinaldo</th>
+                                    <th class="py-2.5 px-2">Indemnización</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tablaEmpleadosBody" class="divide-y divide-slate-200 dark:divide-slate-800/70"></tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </section>
 
-        <!-- ==================== VISTA 3: BITÁCORA FORENSE SQL ==================== -->
-        <section id="seccion-bitacora" class="hidden space-y-6">
-            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5">
-                <h3 class="text-sm font-bold text-white mb-4"><i class="fa-solid fa-terminal text-emerald-400 mr-2"></i>Bitácora de Auditoría de Recursos Humanos (`trg_calcular_planilla_gt`)</h3>
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left border-collapse text-xs mono">
-                        <thead>
-                            <tr class="border-b border-slate-800 text-slate-400 uppercase text-[11px]">
-                                <th class="py-2.5 px-2">ID</th>
-                                <th class="py-2.5 px-2">Fecha/Hora</th>
-                                <th class="py-2.5 px-2">Código Empleado</th>
-                                <th class="py-2.5 px-2">Evento</th>
-                                <th class="py-2.5 px-2">Detalle Financiero Auditado</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tablaBitacoraBody" class="divide-y divide-slate-800/70"></tbody>
-                    </table>
+        <!-- ==================== VISTA 3: CALCULADORA DE LIQUIDACIÓN E INDEMNIZACIÓN ==================== -->
+        <section id="seccion-liquidacion" class="hidden space-y-6">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm">
+                    <h3 class="text-sm font-extrabold text-slate-900 dark:text-white mb-1"><i class="fa-solid fa-file-signature text-amber-500 mr-2"></i>Calculadora Legal de Liquidación / Finiquito Laboral (Guatemala)</h3>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mb-4">Calcula automáticamente Indemnización (Art. 82 Código de Trabajo), Vacaciones, Bono 14 y Aguinaldo proporcional.</p>
+
+                    <div class="space-y-3 text-xs">
+                        <div>
+                            <label class="font-semibold block mb-1">Seleccionar Colaborador a Liquidar</label>
+                            <select id="liqEmpleadoId" onchange="calcularLiquidacionGT()" class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2.5"></select>
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="font-semibold block mb-1">Años Trabajados</label>
+                                <input type="number" step="0.5" id="liqAnios" oninput="calcularLiquidacionGT()" value="2" min="0.5" class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2 mono">
+                            </div>
+                            <div>
+                                <label class="font-semibold block mb-1">Días de Vacaciones Pendientes</label>
+                                <input type="number" id="liqVacacionesDias" oninput="calcularLiquidacionGT()" value="15" min="0" class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2 mono">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="font-semibold block mb-1">Motivo de Retiro</label>
+                            <select id="liqMotivo" onchange="calcularLiquidacionGT()" class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2.5">
+                                <option value="DESPIDO_INJUSTIFICADO">Despido Injustificado / Reestructuración (Aplica Indemnización Completa)</option>
+                                <option value="RENUNCIA_VOLUNTARIA">Renuncia Voluntaria (Solo Prestaciones Irrenunciables: Bono 14, Aguinaldo y Vacaciones)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Resultado del Finiquito -->
+                <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm flex flex-col justify-between">
+                    <div>
+                        <h4 class="text-sm font-extrabold text-slate-900 dark:text-white border-b border-slate-200 dark:border-slate-800 pb-2 mb-3">Desglose Oficial de Liquidación Laboral</h4>
+                        <div class="space-y-2 text-xs mono">
+                            <div class="flex justify-between"><span>Indemnización por Tiempo Servido:</span><span id="resIndemnizacion" class="font-bold text-blue-600 dark:text-cyan-400">Q0.00</span></div>
+                            <div class="flex justify-between"><span>Bono 14 Proporcional (Decreto 42-92):</span><span id="resBono14" class="font-bold">Q0.00</span></div>
+                            <div class="flex justify-between"><span>Aguinaldo Proporcional (Decreto 76-78):</span><span id="resAguinaldo" class="font-bold">Q0.00</span></div>
+                            <div class="flex justify-between"><span>Vacaciones No Gozadas:</span><span id="resVacaciones" class="font-bold">Q0.00</span></div>
+                        </div>
+                    </div>
+                    <div class="mt-6 pt-4 border-t border-slate-200 dark:border-slate-800 flex justify-between items-center">
+                        <span class="text-sm font-extrabold uppercase">TOTAL FINIQUITO A PAGAR:</span>
+                        <span id="resTotalFiniquito" class="text-2xl font-extrabold text-emerald-600 dark:text-emerald-400 mono">Q0.00</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== VISTA 4: GRÁFICAS BI Y BITÁCORA SQL ==================== -->
+        <section id="seccion-analytics" class="hidden space-y-6">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm">
+                    <h3 class="text-sm font-extrabold text-slate-900 dark:text-white mb-3"><i class="fa-solid fa-chart-column text-blue-500 mr-2"></i>Comparativa Sueldo Base vs. Líquido Recibido (Q)</h3>
+                    <div class="h-64"><canvas id="chartSalarios"></canvas></div>
+                </div>
+                <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm">
+                    <h3 class="text-sm font-extrabold text-slate-900 dark:text-white mb-3"><i class="fa-solid fa-terminal text-emerald-500 mr-2"></i>Bitácora Forense del Trigger (`trg_calcular_planilla_gt`)</h3>
+                    <div class="overflow-y-auto max-h-64">
+                        <table class="w-full text-left border-collapse text-xs mono">
+                            <tbody id="tablaBitacoraBody" class="divide-y divide-slate-200 dark:divide-slate-800/70"></tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </section>
     </main>
 
+    <!-- PIE DE PÁGINA CON PROPIETARIO OFICIAL -->
+    <footer class="border-t border-slate-200 dark:border-slate-800 py-4 text-center text-xs text-slate-500 dark:text-slate-400">
+        Sistema Empresarial <strong>NominaGT & RRHH Pro v2.0</strong> — Propiedad Intelectual y Desarrollo por <strong>Kevin Alejandro Boquer Ramos</strong>
+    </footer>
+
     <!-- MODAL DE BOLETA DE PAGO OFICIAL IMPRIMIBLE CON QR -->
-    <div id="contenedorModalBoleta" class="fixed inset-0 bg-black/80 z-50 hidden items-center justify-center p-4">
-        <div id="modalBoleta" class="bg-white text-slate-900 rounded-2xl p-6 w-full max-w-lg shadow-2xl text-xs">
+    <div id="contenedorModalBoleta" class="fixed inset-0 bg-black/75 z-50 hidden items-center justify-center p-4">
+        <div id="modalImprimible" class="bg-white text-slate-900 rounded-2xl p-6 w-full max-w-lg shadow-2xl text-xs">
             <div class="flex justify-between items-start border-b-2 border-slate-800 pb-3 mb-4">
                 <div>
-                    <h3 class="text-base font-extrabold uppercase tracking-tight">CORPORACIÓN TECNOLÓGICA DE GUATEMALA S.A.</h3>
-                    <p class="text-[11px] text-slate-600">Ciudad de Guatemala | Patrón IGSS No. 104-99281-K</p>
-                    <p class="text-xs font-bold text-blue-700 mt-1">CONSTANCIA OFICIAL DE PAGO DE SALARIO</p>
+                    <h3 class="text-base font-extrabold uppercase tracking-tight">CORPORACIÓN EMPRESARIAL DE GUATEMALA S.A.</h3>
+                    <p class="text-[11px] text-slate-600">Sistema Administrado por: <strong>Kevin Alejandro Boquer Ramos</strong></p>
+                    <p class="text-xs font-bold text-blue-700 mt-1">BOLETA OFICIAL DE PAGO DE PLANILLA E IGSS</p>
                 </div>
                 <div id="boletaQR" class="p-1 bg-white border border-slate-300 rounded"></div>
             </div>
@@ -230,19 +410,19 @@
                     <div class="space-y-1 mono text-[11px]">
                         <div class="flex justify-between"><span>IGSS Laboral (4.83%):</span><span id="bolIgssDesc"></span></div>
                         <div class="flex justify-between"><span>ISR / Anticipos:</span><span id="bolOtrosDesc"></span></div>
-                        <div class="flex justify-between text-slate-500 pt-2 border-t border-slate-200"><span>Aporte Patronal:</span><span id="bolPatronal"></span></div>
+                        <div class="flex justify-between text-slate-500 pt-2 border-t border-slate-200"><span>Cuota Patronal:</span><span id="bolPatronal"></span></div>
                     </div>
                 </div>
             </div>
 
             <div class="bg-slate-900 text-white p-3.5 rounded-xl flex justify-between items-center mb-6">
-                <span class="font-bold text-xs uppercase">SALARIO LÍQUIDO ACREDITADO:</span>
+                <span class="font-bold text-xs uppercase">LÍQUIDO ACREDITADO AL COLABORADOR:</span>
                 <span id="bolLiquido" class="text-lg font-extrabold text-emerald-400 mono"></span>
             </div>
 
             <div class="grid grid-cols-2 gap-8 pt-6 text-center text-[11px] text-slate-600">
                 <div class="border-t border-slate-400 pt-1">Firma de Recibido Conforme (Colaborador)</div>
-                <div class="border-t border-slate-400 pt-1">Sello y Autorización Recursos Humanos</div>
+                <div class="border-t border-slate-400 pt-1">Autorizado por: Kevin Alejandro Boquer Ramos</div>
             </div>
 
             <div class="mt-5 flex gap-2 no-print">
@@ -255,19 +435,36 @@
     <script>
         const API_URL = "http://127.0.0.1:8000/api";
         let modoDemo = false;
+        let chartInstance = null;
 
         let estado = {
             empleados: [
-                { id: 1, codigo_emp: 'EMP-GT-001', dpi: '3019 48291 0101', nombre_completo: 'Derek José Ramos Bar', puesto: 'Ingeniero de Sistemas / Líder TI', departamento: 'Tecnología', salario_base: 7500.00, afiliacion_igss: '2026-09182-1' },
-                { id: 2, codigo_emp: 'EMP-GT-002', dpi: '2847 19283 0101', nombre_completo: 'María Fernanda Salazar', puesto: 'Analista Financiera & Contable', departamento: 'Finanzas', salario_base: 6200.00, afiliacion_igss: '2024-88210-4' },
-                { id: 3, codigo_emp: 'EMP-GT-003', dpi: '2591 83746 0101', nombre_completo: 'Carlos Roberto Méndez', puesto: 'Administrador de Base de Datos', departamento: 'Tecnología', salario_base: 6800.00, afiliacion_igss: '2023-44109-9' },
-                { id: 4, codigo_emp: 'EMP-GT-004', dpi: '3102 94857 0101', nombre_completo: 'Ana Lucía Valenzuela', puesto: 'Coordinadora de RRHH', departamento: 'Capital Humano', salario_base: 5500.00, afiliacion_igss: '2025-11029-2' }
+                { id: 1, codigo_emp: 'EMP-GT-001', dpi: '3019 48291 0101', nombre_completo: 'Kevin Alejandro Boquer Ramos', puesto: 'Director de Sistemas & Propietario', departamento: 'Tecnología e Innovación', salario_base: 9500.00, afiliacion_igss: '2026-09182-1', telefono_whatsapp: '50255551111' },
+                { id: 2, codigo_emp: 'EMP-GT-002', dpi: '2847 19283 0101', nombre_completo: 'María Fernanda Salazar', puesto: 'Analista Financiera & Contable', departamento: 'Finanzas y Contabilidad', salario_base: 6200.00, afiliacion_igss: '2024-88210-4', telefono_whatsapp: '50255552222' },
+                { id: 3, codigo_emp: 'EMP-GT-003', dpi: '2591 83746 0101', nombre_completo: 'Carlos Roberto Méndez', puesto: 'Administrador de Base de Datos', departamento: 'Tecnología e Innovación', salario_base: 6800.00, afiliacion_igss: '2023-44109-9', telefono_whatsapp: '50255553333' },
+                { id: 4, codigo_emp: 'EMP-GT-004', dpi: '3102 94857 0101', nombre_completo: 'Ana Lucía Valenzuela', puesto: 'Coordinadora de RRHH', departamento: 'Capital Humano', salario_base: 5500.00, afiliacion_igss: '2025-11029-2', telefono_whatsapp: '50255554444' }
             ],
             planillas: [],
             bitacora: []
         };
 
-        // Función que replica exactamente la fórmula del Trigger MySQL para el modo demo
+        // Alternar Modo Claro / Modo Oscuro
+        function alternarTema() {
+            const html = document.documentElement;
+            const esOscuro = html.classList.toggle('dark');
+            document.getElementById('iconoTema').className = esOscuro ? 'fa-solid fa-sun text-amber-400' : 'fa-solid fa-moon text-indigo-600';
+            document.getElementById('txtTema').textContent = esOscuro ? 'Modo Claro' : 'Modo Oscuro';
+        }
+
+        // Alternar Modo Fácil (Vista Guiada)
+        function alternarModoFacil() {
+            const activo = document.body.classList.toggle('modo-facil');
+            document.getElementById('txtModoFacil').textContent = activo ? 'Modo Fácil: ON ✨' : 'Modo Fácil: OFF';
+            document.getElementById('btnModoFacil').className = activo
+                ? 'px-3 py-1.5 rounded-xl text-xs font-extrabold border transition bg-amber-500 text-slate-950 border-amber-600 shadow-md flex items-center gap-1.5'
+                : 'px-3 py-1.5 rounded-xl text-xs font-bold border transition bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/30 flex items-center gap-1.5';
+        }
+
         function calcularFormulaTriggerGT(emp, periodo, bonif, horasExtras, comisiones, otrosDesc) {
             const ordinario = Number(emp.salario_base);
             const valorHora = (ordinario / 30.0) / 8.0;
@@ -286,6 +483,7 @@
                 dpi: emp.dpi,
                 puesto: emp.puesto,
                 afiliacion_igss: emp.afiliacion_igss,
+                telefono_whatsapp: emp.telefono_whatsapp || '50255550000',
                 periodo_mes: periodo,
                 salario_ordinario: ordinario,
                 bonificacion_decreto: Number(bonif),
@@ -300,27 +498,26 @@
             };
         }
 
-        function inicializarDatosSemillaDemo() {
-            const semillas = [
-                calcularFormulaTriggerGT(estado.empleados[0], 'OCTUBRE 2026', 250, 8, 500, 0),
+        function inicializarSemillas() {
+            estado.planillas = [
+                calcularFormulaTriggerGT(estado.empleados[0], 'OCTUBRE 2026', 250, 8, 600, 0),
                 calcularFormulaTriggerGT(estado.empleados[1], 'OCTUBRE 2026', 250, 4, 0, 150),
                 calcularFormulaTriggerGT(estado.empleados[2], 'OCTUBRE 2026', 250, 6, 300, 0),
                 calcularFormulaTriggerGT(estado.empleados[3], 'OCTUBRE 2026', 250, 0, 0, 0)
             ];
-            estado.planillas = semillas.reverse();
             estado.bitacora = estado.planillas.map((p, idx) => ({
                 id: idx + 1,
                 fecha_evento: '2026-10-24 09:00:00',
                 empleado_codigo: p.codigo_emp,
-                evento: `EMISIÓN BOLETA PLANILLA - ${p.periodo_mes}`,
-                detalle_financiero: `Devengado Base: Q${(p.salario_ordinario + p.monto_horas_extras + p.comisiones).toFixed(2)} | IGSS (4.83%): Q${p.igss_laboral_483.toFixed(2)} | Líquido: Q${p.liquido_a_recibir.toFixed(2)}`
+                evento: `PLANILLA EMITIDA (${p.periodo_mes})`,
+                detalle_financiero: `IGSS: Q${p.igss_laboral_483.toFixed(2)} | Líquido: Q${p.liquido_a_recibir.toFixed(2)} | Autor: Kevin Alejandro Boquer Ramos`
             }));
         }
 
         async function cargarServidor() {
             try {
                 const res = await fetch(`${API_URL}/dashboard`);
-                if (!res.ok) throw new Error("Modo Demo");
+                if (!res.ok) throw new Error("Demo");
                 const data = await res.json();
                 estado.empleados = data.empleados;
                 estado.planillas = data.planillas;
@@ -328,9 +525,37 @@
                 modoDemo = false;
             } catch (e) {
                 modoDemo = true;
-                inicializarDatosSemillaDemo();
+                inicializarSemillas();
             }
+            poblarSelectoresEmpleados();
             renderizarTodo();
+            actualizarVistaPreviaEnVivo();
+            calcularLiquidacionGT();
+        }
+
+        function poblarSelectoresEmpleados() {
+            const opciones = estado.empleados.map(e =>
+                `<option value="${e.id}">${e.codigo_emp} - ${e.nombre_completo} (Q${Number(e.salario_base).toFixed(2)})</option>`
+            ).join('');
+            document.getElementById('formEmpleadoId').innerHTML = opciones;
+            document.getElementById('liqEmpleadoId').innerHTML = opciones;
+        }
+
+        function actualizarVistaPreviaEnVivo() {
+            const id = Number(document.getElementById('formEmpleadoId').value);
+            const emp = estado.empleados.find(e => e.id === id) || estado.empleados[0];
+            if (!emp) return;
+            const bonif = Number(document.getElementById('formBonificacion').value) || 0;
+            const extras = Number(document.getElementById('formHorasExtras').value) || 0;
+            const comis = Number(document.getElementById('formComisiones').value) || 0;
+            const desc = Number(document.getElementById('formDescuentos').value) || 0;
+
+            const sim = calcularFormulaTriggerGT(emp, 'PREVIEW', bonif, extras, comis, desc);
+            const totalIngresos = sim.salario_ordinario + sim.monto_horas_extras + sim.bonificacion_decreto + sim.comisiones;
+
+            document.getElementById('prevIngresos').textContent = `Q${totalIngresos.toFixed(2)}`;
+            document.getElementById('prevIgss').textContent = `-Q${sim.igss_laboral_483.toFixed(2)}`;
+            document.getElementById('prevLiquido').textContent = `Q${sim.liquido_a_recibir.toFixed(2)}`;
         }
 
         function renderizarTodo() {
@@ -344,49 +569,52 @@
             document.getElementById('kpiPatronal').textContent = `Q${totalPat.toFixed(2)}`;
             document.getElementById('kpiPrestaciones').textContent = `Q${totalPrest.toFixed(2)}`;
 
-            document.getElementById('formEmpleadoId').innerHTML = estado.empleados.map(e =>
-                `<option value="${e.id}">${e.codigo_emp} - ${e.nombre_completo} (Base: Q${Number(e.salario_base).toFixed(2)})</option>`
-            ).join('');
+            const filtro = (document.getElementById('buscadorPlanilla')?.value || '').toLowerCase();
+            const planillasFiltradas = estado.planillas.filter(p =>
+                p.nombre_completo.toLowerCase().includes(filtro) || p.codigo_emp.toLowerCase().includes(filtro)
+            );
 
-            document.getElementById('tablaPlanillasBody').innerHTML = estado.planillas.map((p, i) => `
-                <tr class="hover:bg-slate-800/40">
+            document.getElementById('tablaPlanillasBody').innerHTML = planillasFiltradas.map((p, i) => {
+                const msgWa = encodeURIComponent(`Hola ${p.nombre_completo}, Recursos Humanos le comparte su comprobante de pago (${p.periodo_mes}). Sueldo Base: Q${Number(p.salario_ordinario).toFixed(2)}, Horas Extras/Bonif: +Q${(Number(p.monto_horas_extras)+Number(p.bonificacion_decreto)+Number(p.comisiones)).toFixed(2)}, IGSS (4.83%): -Q${Number(p.igss_laboral_483).toFixed(2)}. LÍQUIDO ACREDITADO: Q${Number(p.liquido_a_recibir).toFixed(2)}. Atte. Kevin Alejandro Boquer Ramos.`);
+                return `
+                <tr class="hover:bg-slate-100 dark:hover:bg-slate-800/40">
                     <td class="py-3 px-2">
-                        <p class="font-bold text-white">${p.nombre_completo}</p>
-                        <p class="text-[11px] text-slate-400 mono">${p.codigo_emp} | ${p.periodo_mes}</p>
+                        <p class="font-bold text-slate-900 dark:text-white">${p.nombre_completo}</p>
+                        <p class="text-[11px] text-slate-500 mono">${p.codigo_emp} | ${p.periodo_mes}</p>
                     </td>
                     <td class="py-3 px-2 mono">Q${Number(p.salario_ordinario).toFixed(2)}</td>
-                    <td class="py-3 px-2 mono text-cyan-400">+Q${(Number(p.monto_horas_extras) + Number(p.bonificacion_decreto) + Number(p.comisiones)).toFixed(2)}</td>
-                    <td class="py-3 px-2 mono text-rose-400">-Q${Number(p.igss_laboral_483).toFixed(2)}</td>
-                    <td class="py-3 px-2 mono font-extrabold text-emerald-400">Q${Number(p.liquido_a_recibir).toFixed(2)}</td>
-                    <td class="py-3 px-2 text-right">
-                        <button onclick="verBoleta(${i})" class="px-3 py-1.5 rounded-lg bg-blue-600/20 hover:bg-blue-600/30 text-blue-400 border border-blue-500/30 font-bold text-xs">
-                            <i class="fa-solid fa-file-pdf mr-1"></i>Boleta QR
+                    <td class="py-3 px-2 mono text-blue-600 dark:text-cyan-400 font-semibold">+Q${(Number(p.monto_horas_extras) + Number(p.bonificacion_decreto) + Number(p.comisiones)).toFixed(2)}</td>
+                    <td class="py-3 px-2 mono text-rose-600 dark:text-rose-400">-Q${Number(p.igss_laboral_483).toFixed(2)}</td>
+                    <td class="py-3 px-2 mono font-extrabold text-emerald-600 dark:text-emerald-400">Q${Number(p.liquido_a_recibir).toFixed(2)}</td>
+                    <td class="py-3 px-2 text-right space-x-1">
+                        <button onclick="verBoleta(${i})" class="px-2.5 py-1.5 rounded-lg bg-blue-600 text-white font-bold text-xs hover:bg-blue-500">
+                            <i class="fa-solid fa-print mr-1"></i>Boleta PDF
                         </button>
+                        <a href="https://wa.me/${p.telefono_whatsapp || '50255550000'}?text=${msgWa}" target="_blank" class="inline-block px-2.5 py-1.5 rounded-lg bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border border-emerald-500/30 font-bold text-xs">
+                            <i class="fa-brands fa-whatsapp"></i>
+                        </a>
                     </td>
                 </tr>
-            `).join('');
+            `}).join('');
 
             document.getElementById('tablaEmpleadosBody').innerHTML = estado.empleados.map(e => {
-                const reservaUnit = Number(e.salario_base) * 0.0833;
+                const r = Number(e.salario_base) * 0.0833;
                 return `
-                <tr class="hover:bg-slate-800/40">
-                    <td class="py-3 px-2 mono text-blue-400 font-bold">${e.codigo_emp}<br><span class="text-[11px] text-slate-400">${e.dpi}</span></td>
-                    <td class="py-3 px-2 font-semibold text-white">${e.nombre_completo}<br><span class="text-[11px] text-slate-400">${e.puesto}</span></td>
-                    <td class="py-3 px-2 mono text-slate-300">${e.afiliacion_igss}</td>
-                    <td class="py-3 px-2 mono font-bold text-white">Q${Number(e.salario_base).toFixed(2)}</td>
-                    <td class="py-3 px-2 mono text-emerald-400">Q${reservaUnit.toFixed(2)} / mes</td>
-                    <td class="py-3 px-2 mono text-cyan-400">Q${reservaUnit.toFixed(2)} / mes</td>
-                    <td class="py-3 px-2 mono text-indigo-400">Q${reservaUnit.toFixed(2)} / mes</td>
+                <tr class="hover:bg-slate-100 dark:hover:bg-slate-800/40">
+                    <td class="py-3 px-2 mono text-blue-600 dark:text-blue-400 font-bold">${e.codigo_emp}<br><span class="text-[11px] text-slate-400">${e.dpi}</span></td>
+                    <td class="py-3 px-2 font-semibold">${e.nombre_completo}<br><span class="text-[11px] text-slate-500">${e.puesto}</span></td>
+                    <td class="py-3 px-2 mono font-bold">Q${Number(e.salario_base).toFixed(2)}</td>
+                    <td class="py-3 px-2 mono text-emerald-600 dark:text-emerald-400">Q${r.toFixed(2)}/mes</td>
+                    <td class="py-3 px-2 mono text-blue-600 dark:text-cyan-400">Q${r.toFixed(2)}/mes</td>
+                    <td class="py-3 px-2 mono text-indigo-600 dark:text-indigo-400">Q${r.toFixed(2)}/mes</td>
                 </tr>
             `}).join('');
 
             document.getElementById('tablaBitacoraBody').innerHTML = estado.bitacora.map(b => `
-                <tr class="hover:bg-slate-800/40">
-                    <td class="py-2.5 px-2 text-slate-400">#${b.id}</td>
-                    <td class="py-2.5 px-2 text-slate-400">${b.fecha_evento}</td>
-                    <td class="py-2.5 px-2 text-blue-400 font-bold">${b.empleado_codigo}</td>
-                    <td class="py-2.5 px-2 text-white">${b.evento}</td>
-                    <td class="py-2.5 px-2 text-emerald-400">${b.detalle_financiero}</td>
+                <tr class="py-2">
+                    <td class="py-2 px-2 text-blue-600 dark:text-blue-400 font-bold">${b.empleado_codigo}</td>
+                    <td class="py-2 px-2">${b.evento}</td>
+                    <td class="py-2 px-2 text-emerald-600 dark:text-emerald-400">${b.detalle_financiero}</td>
                 </tr>
             `).join('');
         }
@@ -400,38 +628,65 @@
             const comisiones = Number(document.getElementById('formComisiones').value);
             const descuento_isr_anticipos = Number(document.getElementById('formDescuentos').value);
 
-            if (!modoDemo) {
-                try {
-                    const res = await fetch(`${API_URL}/planillas`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ empleado_id, periodo_mes, bonificacion_decreto, horas_extras, comisiones, descuento_isr_anticipos })
-                    });
-                    const data = await res.json();
-                    if (!res.ok) throw new Error(data.detail);
-                    await cargarServidor();
-                } catch (err) {
-                    alert("⚠️ BLOQUEO DEL TRIGGER MYSQL: " + err.message);
-                    return;
-                }
-            } else {
-                const emp = estado.empleados.find(x => x.id === empleado_id);
-                const nueva = calcularFormulaTriggerGT(emp, periodo_mes, bonificacion_decreto, horas_extras, comisiones, descuento_isr_anticipos);
-                if (nueva.liquido_a_recibir <= 0) {
-                    alert("ERROR LEGAL SQL (45000): Los descuentos superan el salario líquido del colaborador.");
-                    return;
-                }
-                estado.planillas.unshift(nueva);
-                estado.bitacora.unshift({
-                    id: estado.bitacora.length + 1,
-                    fecha_evento: new Date().toLocaleString(),
-                    empleado_codigo: emp.codigo_emp,
-                    evento: `EMISIÓN BOLETA PLANILLA - ${periodo_mes}`,
-                    detalle_financiero: `IGSS (4.83%): Q${nueva.igss_laboral_483.toFixed(2)} | Líquido Pagado: Q${nueva.liquido_a_recibir.toFixed(2)}`
-                });
-                renderizarTodo();
+            const emp = estado.empleados.find(x => x.id === empleado_id);
+            const nueva = calcularFormulaTriggerGT(emp, periodo_mes, bonificacion_decreto, horas_extras, comisiones, descuento_isr_anticipos);
+            if (nueva.liquido_a_recibir <= 0) {
+                alert("ERROR LEGAL SQL (45000): Los descuentos superan el salario líquido del trabajador.");
+                return;
             }
+            estado.planillas.unshift(nueva);
+            estado.bitacora.unshift({
+                id: estado.bitacora.length + 1,
+                fecha_evento: new Date().toLocaleString(),
+                empleado_codigo: emp.codigo_emp,
+                evento: `EMISIÓN BOLETA PLANILLA - ${periodo_mes}`,
+                detalle_financiero: `IGSS: Q${nueva.igss_laboral_483.toFixed(2)} | Líquido: Q${nueva.liquido_a_recibir.toFixed(2)}`
+            });
+            renderizarTodo();
             verBoleta(0);
+        }
+
+        function agregarNuevoEmpleado(e) {
+            e.preventDefault();
+            const nuevo = {
+                id: estado.empleados.length + 1,
+                codigo_emp: document.getElementById('empCodigo').value.trim(),
+                dpi: document.getElementById('empDpi').value.trim(),
+                nombre_completo: document.getElementById('empNombre').value.trim(),
+                puesto: document.getElementById('empPuesto').value.trim(),
+                departamento: document.getElementById('empDepto').value,
+                salario_base: Number(document.getElementById('empSalario').value),
+                afiliacion_igss: `2026-${Math.floor(10000 + Math.random() * 90000)}-1`,
+                telefono_whatsapp: document.getElementById('empTel').value.trim()
+            };
+            estado.empleados.push(nuevo);
+            poblarSelectoresEmpleados();
+            renderizarTodo();
+            e.target.reset();
+            alert(`✅ Colaborador ${nuevo.nombre_completo} registrado exitosamente.`);
+        }
+
+        function calcularLiquidacionGT() {
+            const id = Number(document.getElementById('liqEmpleadoId').value);
+            const emp = estado.empleados.find(e => e.id === id) || estado.empleados[0];
+            if (!emp) return;
+            const anios = Number(document.getElementById('liqAnios').value) || 1;
+            const diasVac = Number(document.getElementById('liqVacacionesDias').value) || 0;
+            const motivo = document.getElementById('liqMotivo').value;
+
+            const sueldo = Number(emp.salario_base);
+            // Art. 82 Código de Trabajo GT: Indemnización incluye proporción de Bono 14 y Aguinaldo (Sueldo * 14 / 12 por año)
+            const indemnizacion = motivo === 'DESPIDO_INJUSTIFICADO' ? ((sueldo * 14) / 12) * anios : 0;
+            const bono14Prop = sueldo * 0.5;
+            const aguinaldoProp = sueldo * 0.5;
+            const vacacionesMonto = (sueldo / 30) * diasVac;
+            const total = indemnizacion + bono14Prop + aguinaldoProp + vacacionesMonto;
+
+            document.getElementById('resIndemnizacion').textContent = `Q${indemnizacion.toFixed(2)}`;
+            document.getElementById('resBono14').textContent = `Q${bono14Prop.toFixed(2)}`;
+            document.getElementById('resAguinaldo').textContent = `Q${aguinaldoProp.toFixed(2)}`;
+            document.getElementById('resVacaciones').textContent = `Q${vacacionesMonto.toFixed(2)}`;
+            document.getElementById('resTotalFiniquito').textContent = `Q${total.toFixed(2)}`;
         }
 
         function verBoleta(index) {
@@ -455,7 +710,7 @@
 
             const qrBox = document.getElementById('boletaQR');
             qrBox.innerHTML = "";
-            new QRCode(qrBox, { text: `NOMINAGT|EMP:${p.codigo_emp}|LIQ:Q${p.liquido_a_recibir}|IGSS:Q${p.igss_laboral_483}`, width: 68, height: 68 });
+            new QRCode(qrBox, { text: `NOMINAGT|AUTOR:KEVIN_ALEJANDRO_BOQUER_RAMOS|EMP:${p.codigo_emp}|LIQ:Q${p.liquido_a_recibir}`, width: 68, height: 68 });
 
             document.getElementById('contenedorModalBoleta').classList.remove('hidden');
             document.getElementById('contenedorModalBoleta').classList.add('flex');
@@ -466,25 +721,41 @@
             document.getElementById('contenedorModalBoleta').classList.remove('flex');
         }
 
-        function exportarPlanillaCSV() {
-            let csv = "Codigo,Colaborador,DPI,Afiliacion_IGSS,Periodo,Sueldo_Ordinario,Bonif_Decreto,Monto_Horas_Extras,IGSS_Laboral_483,Patronal_1267,Liquido_Recibir\n";
-            estado.planillas.forEach(p => {
-                csv += `"${p.codigo_emp}","${p.nombre_completo}","${p.dpi}","${p.afiliacion_igss}","${p.periodo_mes}",${p.salario_ordinario},${p.bonificacion_decreto},${p.monto_horas_extras},${p.igss_laboral_483},${p.cuota_patronal_1267},${p.liquido_a_recibir}\n`;
+        function renderizarGrafica() {
+            const ctx = document.getElementById('chartSalarios').getContext('2d');
+            if (chartInstance) chartInstance.destroy();
+            chartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: estado.planillas.slice(0, 6).map(p => p.nombre_completo.split(' ')[0]),
+                    datasets: [
+                        { label: 'Sueldo Base (Q)', data: estado.planillas.slice(0, 6).map(p => p.salario_ordinario), backgroundColor: '#3b82f6' },
+                        { label: 'Líquido Pagado (Q)', data: estado.planillas.slice(0, 6).map(p => p.liquido_a_recibir), backgroundColor: '#10b981' }
+                    ]
+                },
+                options: { responsive: true, maintainAspectRatio: false }
             });
-            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        }
+
+        function exportarPlanillaCSV() {
+            let csv = "Propietario_Sistema,Codigo,Colaborador,DPI,Periodo,Sueldo_Base,IGSS_483,Liquido_Recibir\n";
+            estado.planillas.forEach(p => {
+                csv += `"Kevin Alejandro Boquer Ramos","${p.codigo_emp}","${p.nombre_completo}","${p.dpi}","${p.periodo_mes}",${p.salario_ordinario},${p.igss_laboral_483},${p.liquido_a_recibir}\n`;
+            });
             const a = document.createElement('a');
-            a.href = URL.createObjectURL(blob);
-            a.download = "Planilla_IGSS_Guatemala.csv";
+            a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
+            a.download = "Planilla_IGSS_Kevin_Boquer.csv";
             a.click();
         }
 
         function cambiarVista(vista) {
-            ['planilla', 'prestaciones', 'bitacora'].forEach(v => {
+            ['planilla', 'empleados', 'liquidacion', 'analytics'].forEach(v => {
                 document.getElementById(`seccion-${v}`).classList.add('hidden');
-                document.getElementById(`btnVista-${v}`).className = "px-3.5 py-2 rounded-lg text-xs font-bold transition bg-slate-800 text-slate-300 hover:bg-slate-700";
+                document.getElementById(`btnVista-${v}`).className = "px-3.5 py-2 rounded-lg text-xs font-bold transition bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700";
             });
             document.getElementById(`seccion-${vista}`).classList.remove('hidden');
-            document.getElementById(`btnVista-${vista}`).className = "px-3.5 py-2 rounded-lg text-xs font-bold transition bg-blue-600 text-white shadow-lg shadow-blue-600/30";
+            document.getElementById(`btnVista-${vista}`).className = "px-3.5 py-2 rounded-lg text-xs font-bold transition bg-blue-600 text-white shadow-md shadow-blue-600/20";
+            if (vista === 'analytics') renderizarGrafica();
         }
 
         window.onload = cargarServidor;
